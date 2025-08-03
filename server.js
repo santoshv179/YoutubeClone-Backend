@@ -4,6 +4,7 @@ import connectDB from "./config/db.js";
 import cors  from "cors";
 import authRoutes from "./routes/authRoutes.js"
 import videoRoutes from "./routes/videoRoutes.js"
+import commentRoutes from "./routes/commentRoutes.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 
 
@@ -20,6 +21,9 @@ app.use("/api/auth",authRoutes);
 
 // Videos Routes
 app.use("/api/videos", videoRoutes);
+
+// comment Router
+app.use("/api/comments", commentRoutes);
 
 //Error Handler
 app.use(errorHandler);
