@@ -17,11 +17,12 @@ app.use(express.json());
 // Routes
 app.use("/api/auth",authRoutes);
 
-//Error Handler
-app.use(errorHandler);
 
 // Videos Routes
 app.use("/api/videos", videoRoutes);
+
+//Error Handler
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8080
 

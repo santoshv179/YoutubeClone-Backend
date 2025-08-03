@@ -1,126 +1,131 @@
 import Video from "../models/videoModel.js";
 
-// Create a new video
-//  POST /api/videos
-// access  Private
+// Create Video
 export const createVideo = async (req, res) => {
-  const { title, description, url, thumbnail } = req.body;
-
   try {
+    const { title, description, videoUrl, thumbnail, category } = req.body;
+
     const video = await Video.create({
       title,
       description,
-      url,
+      url: videoUrl,
       thumbnail,
+      category,
       createdBy: req.user._id,
     });
 
     res.status(201).json(video);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: "Failed to create video", error: error.message });
   }
 };
 
-// Get all videos
-//  GET /api/videos
-// access  Public
+// Get All Videos
 export const getAllVideos = async (req, res) => {
   try {
-    const videos = await Video.find().populate("createdBy", "name email");
+    const videos = await Video.find()
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
     res.status(200).json(videos);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Failed to get videos", error: error.message });
   }
 };
 
-// Get single video by ID
-//  GET /api/videos/:id
-//  Public
+// Get Single Video by ID
 export const getVideoById = async (req, res) => {
   try {
     const video = await Video.findById(req.params.id).populate("createdBy", "name email");
-
-    if (!video) {
-      return res.status(404).json({ message: "Video not found" });
-    }
+    if (!video) return res.status(404).json({ message: "Video not found" });
 
     res.status(200).json(video);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Failed to get video", error: error.message });
   }
 };
 
-// Update or Edit a video
-// PUT /api/videos/:id
-// Private (Only owner)
+// Update Video
 export const updateVideo = async (req, res) => {
   try {
+    const { title, description, videoUrl, thumbnail, category } = req.body;
+
     const video = await Video.findById(req.params.id);
+    if (!video) return res.status(404).json({ message: "Video not found" });
 
-    if (!video) {
-      return res.status(404).json({ message: "Video not found" });
-    }
-
+    // Only owner can update
     if (video.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to update this video" });
     }
 
-    const { title, description, url, thumbnail } = req.body;
-
     video.title = title || video.title;
     video.description = description || video.description;
-    video.url = url || video.url;
+    video.url = videoUrl || video.url;
     video.thumbnail = thumbnail || video.thumbnail;
+    video.category = category || video.category;
 
     const updatedVideo = await video.save();
     res.status(200).json(updatedVideo);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Failed to update video", error: error.message });
   }
 };
 
-// Delete a video
-// DELETE /api/videos/:id
-// @access  Private (Only owner)
+// Delete Video
 export const deleteVideo = async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
-
-    if (!video) {
-      return res.status(404).json({ message: "Video not found" });
-    }
+    if (!video) return res.status(404).json({ message: "Video not found" });
 
     if (video.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to delete this video" });
     }
 
-    await video.deleteOne();  // ✅ Use this instead of remove
+    await video.deleteOne();
     res.status(200).json({ message: "Video deleted successfully" });
   } catch (error) {
-    console.error("Delete Video Error:", error);  // Add logging
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Failed to delete video", error: error.message });
   }
 };
 
-// Get videos uploaded by a specific user
-export const getUserVideos = async (req ,res) =>{
-  try{
-
-    // user ID from the URL params
-    const userId = req.params.userId;
-
-    // Find all videos where 'user' field matches the given userId
-    const videos = await Video.find({ createdBy: userId }).populate("createdBy", "username");
-    
-    
-    if (!videos || videos.length === 0) {
-      return res.status(404).json({ message: 'No videos found for this user.' });
-    }
-
-   //Send response with all videos created by the user
+// Get Videos by User
+export const getUserVideos = async (req, res) => {
+  try {
+    const videos = await Video.find({ createdBy: req.user._id }).populate("createdBy", "name email");
     res.status(200).json(videos);
   } catch (error) {
-    console.error('Error fetching user videos:', error.message);
-    res.status(500).json({ message: 'Server error while fetching videos.' });
+    res.status(500).json({ message: "Failed to fetch user videos", error: error.message });
   }
-}
+};
+
+// Search Videos by Title
+export const searchVideosByTitle = async (req, res) => {
+  try {
+    const { title } = req.query;
+
+    if (!title) return res.status(400).json({ message: "Title is required for search" });
+
+    const videos = await Video.find({
+      title: { $regex: title, $options: "i" },
+    }).populate("createdBy", "name email");
+
+    res.status(200).json(videos);
+  } catch (error) {
+    res.status(500).json({ message: "Search failed", error: error.message });
+  }
+};
+
+// Get Videos by Category
+export const getVideosByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    if (!category) return res.status(400).json({ message: "Category is required" });
+
+    const videos = await Video.find({ category }).populate("createdBy", "name email");
+
+    res.status(200).json(videos);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch videos", error: error.message });
+  }
+};

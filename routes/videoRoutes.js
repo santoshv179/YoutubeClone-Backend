@@ -6,17 +6,23 @@ import {
   updateVideo,
   deleteVideo,
   getUserVideos,
+  searchVideosByTitle,
+  getVideosByCategory,
 } from "../controllers/videoController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, createVideo);           // POST /app/videos
-router.get("/", getAllVideos);                    // GET /app/videos
-router.get("/:id", getVideoById);                 // GET /app/videos/:id
-router.put("/:id", protect, updateVideo);         // PUT /app/videos/:id
-router.delete("/:id", protect, deleteVideo);      // DELETE /app/videos/:id
+// Search & Category filters first (order matters)
+router.get("/search", searchVideosByTitle);
+router.get("/category/:category", getVideosByCategory);
 
-router.get('/user/:userId', getUserVideos); // This route handles user-wise video list
+// CRUD routes
+router.get("/", getAllVideos);
+router.post("/", protect, createVideo);
+router.get("/user", protect, getUserVideos);
+router.get("/:id", getVideoById);
+router.put("/:id", protect, updateVideo);
+router.delete("/:id", protect, deleteVideo);
 
 export default router;

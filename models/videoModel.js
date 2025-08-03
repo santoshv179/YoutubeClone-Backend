@@ -4,23 +4,24 @@ const videoSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Video title is required"],
+      required: true,
       trim: true,
     },
     description: {
       type: String,
-      required: [true, "Video description is required"],
-      trim: true,
+      required: true,
     },
     url: {
       type: String,
-      required: [true, "Video URL is required"],
-      match: [/^https?:\/\/.+/, "Please enter a valid video URL"],
+      required: true,
     },
     thumbnail: {
       type: String,
-      required: [true, "Thumbnail URL is required"],
-      match: [/^https?:\/\/.+/, "Please enter a valid thumbnail URL"],
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,10 +29,9 @@ const videoSchema = new mongoose.Schema(
       required: true,
     },
   },
-  {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
-  }
+  { timestamps: true }
 );
 
 const Video = mongoose.model("Video", videoSchema);
+
 export default Video;
