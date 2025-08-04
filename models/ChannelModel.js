@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const channelShema = new mongoose.Schema({
+const channelSchema  = new mongoose.Schema({
   channelName: {
     type: String,
     required: true,
@@ -36,5 +36,5 @@ const channelShema = new mongoose.Schema({
 { timestamps: true }
 );
 
-const Channel = mongoose.model("Channel", channelSchema);
+const Channel = mongoose.model("Channel", channelSchema );
 export default Channel;

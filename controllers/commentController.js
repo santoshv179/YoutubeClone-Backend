@@ -29,7 +29,7 @@ export const getCommentsByVideo = async (req, res) => {
     const { videoId } = req.params;
 
     const comments = await Comment.find({ videoId })
-      .populate("createdBy", "name email")
+      .populate("createdBy", "username email")
       .sort({ createdAt: -1 });
     return res.status(200).json(comments);
   } catch (error) {
@@ -41,26 +41,41 @@ export const getCommentsByVideo = async (req, res) => {
 
 // update Comment
 // PUT /api/comments/:commentId
+
 export const updateComment = async (req, res) => {
   try {
     const { commentId } = req.params;
     const { text } = req.body;
+
+    // 🔒 Validate input
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ message: "Comment text is required" });
+    }
 
     const comment = await Comment.findById(commentId);
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
+    // 🔐 Authorization check
     if (comment.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not authorized to update this comment" });
     }
 
-    comment.text = text || comment.text;
+    // ✅ Update
+    comment.text = text.trim();
     const updated = await comment.save();
 
-    res.status(200).json(updated);
+    res.status(200).json({
+      message: "Comment updated successfully",
+      comment: updated
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Failed to update comment", error: error.message });
+    res.status(500).json({
+      message: "Failed to update comment",
+      error: error.message
+    });
   }
 };
 

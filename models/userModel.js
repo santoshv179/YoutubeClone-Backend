@@ -3,9 +3,9 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, "Username is required"],
     },
     email: {
       type: String,
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hashed Password before Saving
-userSchema.pre("save", async function name(next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   const salt = await bcrypt.genSalt(10);

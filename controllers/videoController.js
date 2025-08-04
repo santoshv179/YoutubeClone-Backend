@@ -24,7 +24,7 @@ export const createVideo = async (req, res) => {
 export const getAllVideos = async (req, res) => {
   try {
     const videos = await Video.find()
-      .populate("createdBy", "name email")
+      .populate("createdBy", "username email")
       .sort({ createdAt: -1 });
 
     res.status(200).json(videos);
@@ -36,7 +36,7 @@ export const getAllVideos = async (req, res) => {
 // Get Single Video by ID
 export const getVideoById = async (req, res) => {
   try {
-    const video = await Video.findById(req.params.id).populate("createdBy", "name email");
+    const video = await Video.findById(req.params.id).populate("createdBy", "username email");
     if (!video) return res.status(404).json({ message: "Video not found" });
 
     res.status(200).json(video);
@@ -91,7 +91,7 @@ export const deleteVideo = async (req, res) => {
 // Get Videos by User
 export const getUserVideos = async (req, res) => {
   try {
-    const videos = await Video.find({ createdBy: req.user._id }).populate("createdBy", "name email");
+    const videos = await Video.find({ createdBy: req.user._id }).populate("createdBy", "username email");
     res.status(200).json(videos);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch user videos", error: error.message });
@@ -107,7 +107,7 @@ export const searchVideosByTitle = async (req, res) => {
 
     const videos = await Video.find({
       title: { $regex: title, $options: "i" },
-    }).populate("createdBy", "name email");
+    }).populate("createdBy", "username email");
 
     res.status(200).json(videos);
   } catch (error) {
@@ -122,7 +122,9 @@ export const getVideosByCategory = async (req, res) => {
 
     if (!category) return res.status(400).json({ message: "Category is required" });
 
-    const videos = await Video.find({ category }).populate("createdBy", "name email");
+    const videos = await Video.find({
+      category: { $regex: new RegExp(`^${category}$`, "i") },
+    }).populate("createdBy", "username email");
 
     res.status(200).json(videos);
   } catch (error) {

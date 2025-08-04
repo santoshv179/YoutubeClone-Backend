@@ -5,6 +5,7 @@ import cors  from "cors";
 import authRoutes from "./routes/authRoutes.js"
 import videoRoutes from "./routes/videoRoutes.js"
 import commentRoutes from "./routes/commentRoutes.js";
+import channelRoutes from "./routes/channelRoutes.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 
 
@@ -24,6 +25,10 @@ app.use("/api/videos", videoRoutes);
 
 // comment Router
 app.use("/api/comments", commentRoutes);
+
+
+// channel Router
+app.use("/api/channels", channelRoutes);
 
 //Error Handler
 app.use(errorHandler);
